@@ -42,7 +42,7 @@ function Cell({ name, children }) {
     </CellContainer>
   )
 }
-
+//TODO : MAKE THIS PURE COMPONENT calling a lodash function in return is expensive
 export default function DataGrid(patient) {
   const {
     notes,
@@ -54,9 +54,9 @@ export default function DataGrid(patient) {
     status,
     reportedOn,
     sources,
-  } = patient;
+  } = patient
 
-  const genderInitCap = gender.charAt(0).toUpperCase() + gender.slice(1);
+  const genderInitCap = gender.charAt(0).toUpperCase() + gender.slice(1)
 
   return (
     <Container>
@@ -74,9 +74,14 @@ export default function DataGrid(patient) {
       <Cell name="Sources">
         {sources
           ? sources.map((source, i) => (
-              <div>
+              <div key={i}>
                 <div style={{ display: 'inline-block' }}>{i + 1}.&nbsp;</div>
-                <A href={source} target="_blank" rel="noopener noreferer">
+                <A
+                  href={source}
+                  target="_blank"
+                  rel="noopener noreferer"
+                  key={i}
+                >
                   {_.truncate(source, {
                     length: 40,
                     separator: /,? +/,

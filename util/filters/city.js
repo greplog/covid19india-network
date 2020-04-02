@@ -3,16 +3,22 @@ import { state_node, city_node } from '../../images'
 import _ from 'lodash'
 import dotProp from 'dot-prop-immutable'
 
+function getCityDistrictOrState(patients, patientId) {
+    return patients[patientId].city
+        ? patients[patientId].city
+        : (patients[patientId].district ? patients[patientId].district : (patients[patientId].state?patients[patientId].state:"No State"));
+}
+
 export const addCities = (graph, patients) => {
-  // cities = { '831909i12' : [{ '3849023' : 'NewDelhi'}]}
-  let states = {}
-  let stateCitiesMap = {}
+  let cityKey;
+    let key;
+// cities = { '831909i12' : [{ '3849023' : 'NewDelhi'}]}
+  let states = {};
+  let stateCitiesMap = {};
 
   for (let patientId in patients) {
-    let city = patients[patientId].city
-      ? patients[patientId].city
-      : patients[patientId].district
-    if (!states[hash(patients[patientId].state)]) {
+    let city = getCityDistrictOrState(patients, patientId)
+    if (!states[hash((patients[patientId].state ? patients[patientId].state : patients[patientId].state = "No State"))]) {
       states[hash(patients[patientId].state)] = patients[patientId].state
       if (!stateCitiesMap[hash(patients[patientId].state)]) {
         stateCitiesMap[hash(patients[patientId].state)] = {}
@@ -28,7 +34,7 @@ export const addCities = (graph, patients) => {
 
   console.log('State map', states, 'State Cities Map:', stateCitiesMap)
 
-  for (var key in states) {
+  for (key in states) {
     let node = {
       id: key + 1,
       label: states[key],
@@ -36,11 +42,17 @@ export const addCities = (graph, patients) => {
       shape: 'image',
       image: state_node,
     }
-    graph = dotProp.set(graph, 'nodes', list => [...list, node])
+    let index = _.findIndex(dotProp.get(graph, 'nodes'), function(o) {
+      return o.id == node.id
+    })
+
+    if (index === -1) {
+      graph = dotProp.set(graph, 'nodes', list => [...list, node])
+    }
   }
 
-  for (var key in stateCitiesMap) {
-    for (var cityKey in stateCitiesMap[key]) {
+  for (key in stateCitiesMap) {
+    for (cityKey in stateCitiesMap[key]) {
       let cityNode = {
         id: cityKey,
         label: stateCitiesMap[key][cityKey],
@@ -49,12 +61,18 @@ export const addCities = (graph, patients) => {
         image: city_node,
       }
 
-      graph = dotProp.set(graph, 'nodes', list => [...list, cityNode])
+      let index = _.findIndex(dotProp.get(graph, 'nodes'), function(o) {
+        return o.id == cityNode.id
+      })
+
+      if (index === -1) {
+        graph = dotProp.set(graph, 'nodes', list => [...list, cityNode])
+      }
     }
   }
 
-  for (var key in stateCitiesMap) {
-    for (var cityKey in stateCitiesMap[key]) {
+  for (key in stateCitiesMap) {
+    for (cityKey in stateCitiesMap[key]) {
       let edge = {
         from: key + 1,
         to: cityKey,
@@ -72,9 +90,7 @@ export const addCities = (graph, patients) => {
   }
 
   for (let patientId in patients) {
-    let city = patients[patientId].city
-      ? patients[patientId].city
-      : patients[patientId].district
+    let city = getCityDistrictOrState(patients, patientId)
     let edge = {
       from: hash(city),
       to: patients[patientId].patientId,
@@ -94,14 +110,14 @@ export const addCities = (graph, patients) => {
 }
 
 export const removeCities = (graph, patients) => {
-  // cities = { '831909i12' : [{ '3849023' : 'NewDelhi'}]}
-  let states = {}
-  let stateCitiesMap = {}
+// cities = { '831909i12' : [{ '3849023' : 'NewDelhi'}]}
+  let cityKey;
+  let key;
+  let states = {};
+  let stateCitiesMap = {};
 
   for (let patientId in patients) {
-    let city = patients[patientId].city
-      ? patients[patientId].city
-      : patients[patientId].district
+    let city = getCityDistrictOrState(patients, patientId)
     if (!states[hash(patients[patientId].state)]) {
       states[hash(patients[patientId].state)] = patients[patientId].state
       if (!stateCitiesMap[hash(patients[patientId].state)]) {
@@ -117,7 +133,7 @@ export const removeCities = (graph, patients) => {
   }
 
   console.log('State map', states, 'State Cities Map:', stateCitiesMap)
-  for (var key in states) {
+  for (key in states) {
     let node = {
       id: key + 1,
       label: states[key],
@@ -134,8 +150,8 @@ export const removeCities = (graph, patients) => {
     }
   }
 
-  for (var key in stateCitiesMap) {
-    for (var cityKey in stateCitiesMap[key]) {
+  for (key in stateCitiesMap) {
+    for (cityKey in stateCitiesMap[key]) {
       let cityNode = {
         id: cityKey,
         label: stateCitiesMap[key][cityKey],
@@ -153,8 +169,8 @@ export const removeCities = (graph, patients) => {
       }
     }
   }
-  for (var key in stateCitiesMap) {
-    for (var cityKey in stateCitiesMap[key]) {
+  for (key in stateCitiesMap) {
+    for (cityKey in stateCitiesMap[key]) {
       let edge = {
         from: key + 1,
         to: cityKey,
@@ -177,9 +193,7 @@ export const removeCities = (graph, patients) => {
   }
 
   for (let patientId in patients) {
-    let city = patients[patientId].city
-      ? patients[patientId].city
-      : patients[patientId].district
+    let city = getCityDistrictOrState(patients, patientId)
     let edge = {
       from: hash(city),
       to: patients[patientId].patientId,
